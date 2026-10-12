@@ -1,0 +1,146 @@
+/* Design tokens, page background and overall layout. */
+
+:root {
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Rounded', ui-rounded, 'Segoe UI', Roboto, system-ui, sans-serif;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg-1: #06151a;
+  --bg-2: #0c2a2b;
+  --blob-1: #11b886;
+  --blob-2: #2a6df4;
+  --blob-3: #8b5cf6;
+  --blob-opacity: 0.4;
+  --text: #f2f7f5;
+  --text-dim: rgba(242, 247, 245, 0.6);
+  --glass-fill: rgba(255, 255, 255, 0.1);
+  --glass-fill-2: rgba(255, 255, 255, 0.04);
+  --glass-strong: rgba(24, 40, 44, 0.62);
+  --glass-edge: rgba(255, 255, 255, 0.2);
+  --glass-shine: rgba(255, 255, 255, 0.4);
+  --glass-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.6);
+  --slot-fill: rgba(255, 255, 255, 0.06);
+  --slot-edge: rgba(255, 255, 255, 0.14);
+  --thumb: rgba(255, 255, 255, 0.2);
+  --accent: #36d6a2;
+  --accent-ink: #032218;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg-1: #eaf6ef;
+  --bg-2: #d8ebf6;
+  --blob-1: #5fe0b0;
+  --blob-2: #8ec1ff;
+  --blob-3: #ffd5b0;
+  --blob-opacity: 0.65;
+  --text: #10201a;
+  --text-dim: rgba(16, 32, 26, 0.56);
+  --glass-fill: rgba(255, 255, 255, 0.55);
+  --glass-fill-2: rgba(255, 255, 255, 0.25);
+  --glass-strong: rgba(255, 255, 255, 0.72);
+  --glass-edge: rgba(255, 255, 255, 0.95);
+  --glass-shine: rgba(255, 255, 255, 1);
+  --glass-shadow: 0 16px 36px -14px rgba(30, 80, 64, 0.38);
+  --slot-fill: rgba(16, 70, 46, 0.06);
+  --slot-edge: rgba(16, 70, 46, 0.13);
+  --thumb: #ffffff;
+  --accent: #0e9f72;
+  --accent-ink: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--text);
+  background: linear-gradient(160deg, var(--bg-1), var(--bg-2));
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Soft colour fields: they give the glass something to refract. */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: var(--blob-opacity);
+  animation: drift 40s ease-in-out infinite alternate;
+}
+
+.b1 { width: 62vmax; height: 62vmax; left: -18vmax; top: -22vmax; background: var(--blob-1); }
+.b2 { width: 54vmax; height: 54vmax; right: -16vmax; bottom: -20vmax; background: var(--blob-2); animation-duration: 52s; }
+.b3 { width: 42vmax; height: 42vmax; right: 8vmax; top: -10vmax; background: var(--blob-3); animation-duration: 46s; }
+
+@keyframes drift {
+  to { transform: translate3d(6vmax, 5vmax, 0) scale(1.08); }
+}
+
+/* Layout: status pill / table / control dock. */
+#app {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'hud' 'board' 'dock';
+  gap: 10px;
+  padding: max(env(safe-area-inset-top), 10px) max(env(safe-area-inset-right), 8px) max(env(safe-area-inset-bottom), 10px)
+    max(env(safe-area-inset-left), 8px);
+}
+
+.hud { grid-area: hud; justify-self: center; }
+.dock { grid-area: dock; justify-self: center; }
+
+.board {
+  grid-area: board;
+  position: relative;
+  width: 100%;
+  max-width: 1180px;
+  justify-self: center;
+  touch-action: none;
+}
+
+/* Short landscape screens (phones on their side): controls share the top row. */
+@media (max-height: 480px) and (orientation: landscape) {
+  #app {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: 'hud dock' 'board board';
+    gap: 6px 12px;
+  }
+  .hud { justify-self: start; }
+  .dock { justify-self: end; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob { animation: none; }
+}

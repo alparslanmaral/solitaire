@@ -1,0 +1,157 @@
+/* The table: empty slots and cards. Positions come from JS as `transform`; everything else lives here. */
+
+.board {
+  --cw: 60px;
+  --ch: 84px;
+  --cr: 6px;
+}
+
+.slot,
+.card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--cw);
+  height: var(--ch);
+  border-radius: var(--cr);
+}
+
+/* ---- empty slots ---------------------------------------------------------------- */
+
+.slot {
+  display: grid;
+  place-items: center;
+  background: var(--slot-fill);
+  border: 1px solid var(--slot-edge);
+  color: var(--text-dim);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition:
+    box-shadow 0.25s,
+    background-color 0.25s;
+}
+
+.slot b {
+  font-size: calc(var(--cw) * 0.36);
+  font-weight: 600;
+  opacity: 0.4;
+}
+
+.slot svg {
+  width: 38%;
+  opacity: 0.5;
+}
+
+.slot-stock { cursor: pointer; }
+
+/* ---- cards ------------------------------------------------------------------------ */
+
+.card {
+  perspective: 900px;
+  container-type: inline-size; /* lets card themes size things with cqw units */
+  cursor: grab;
+  touch-action: none;
+  box-shadow:
+    0 1px 1.5px rgba(0, 0, 0, 0.28),
+    0 4px 9px -3px rgba(0, 0, 0, 0.32);
+  transition:
+    transform 0.36s var(--ease-out),
+    box-shadow 0.25s;
+  will-change: transform;
+}
+
+.card-inner {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transform-style: preserve-3d;
+  transition: transform 0.42s var(--ease-out);
+}
+
+.card.up .card-inner { transform: rotateY(180deg); }
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.card-front { transform: rotateY(180deg); }
+
+/* A hairline edge so white cards never melt into a light background. */
+.card-face::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14);
+  pointer-events: none;
+}
+
+.card-face svg,
+.card-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.board.no-anim .card,
+.board.no-anim .card-inner { transition: none !important; }
+
+/* ---- interaction states --------------------------------------------------------------- */
+
+.card.dragging {
+  cursor: grabbing;
+  scale: 1.045;
+  transition:
+    scale 0.18s var(--ease-spring),
+    box-shadow 0.18s;
+  box-shadow:
+    0 2px 3px rgba(0, 0, 0, 0.25),
+    0 18px 30px -8px rgba(0, 0, 0, 0.5);
+}
+
+.card.flying { transition: none; }
+
+.card.buried { box-shadow: none; }
+
+.card.drop-glow,
+.slot.drop-glow {
+  box-shadow:
+    0 0 0 2.5px var(--accent),
+    0 0 22px -2px var(--accent);
+}
+
+.card.hint,
+.card.hint-target,
+.slot.hint-target {
+  animation: glow 0.75s ease-in-out 3;
+  box-shadow:
+    0 0 0 2.5px var(--accent),
+    0 0 22px -2px var(--accent);
+}
+
+@keyframes glow {
+  50% {
+    box-shadow:
+      0 0 0 4px var(--accent),
+      0 0 34px 2px var(--accent);
+  }
+}
+
+.card.shake { animation: shake 0.34s ease-in-out; }
+
+@keyframes shake {
+  20% { translate: -5px 0; }
+  45% { translate: 5px 0; }
+  70% { translate: -3px 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card { transition-duration: 0.01s; }
+  .card-inner { transition-duration: 0.01s; }
+}

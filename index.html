@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <title>Solitaire</title>
+  <meta name="description" content="A calm, modern Klondike Solitaire.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0a1a1a">
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Solitaire">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <script>
+    // Apply the saved appearance before first paint so there is no light/dark flash.
+    try {
+      var a = (JSON.parse(localStorage.getItem('solitaire:settings')) || {}).appearance || 'system';
+      var dark = a === 'dark' || (a === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    } catch (e) {}
+  </script>
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/glass.css">
+  <link rel="stylesheet" href="css/board.css">
+  <link rel="stylesheet" href="css/dialogs.css">
+</head>
+<body>
+  <div class="bg" aria-hidden="true"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i></div>
+
+  <div id="app">
+    <header class="hud glass" aria-label="Game status">
+      <div class="stat"><span class="stat-label">Score</span><span class="stat-value" id="stat-score">0</span></div>
+      <div class="stat"><span class="stat-label">Moves</span><span class="stat-value" id="stat-moves">0</span></div>
+      <div class="stat"><span class="stat-label">Time</span><span class="stat-value" id="stat-time">0:00</span></div>
+    </header>
+
+    <main id="board" class="board" aria-label="Solitaire table"></main>
+
+    <nav class="dock glass" aria-label="Game controls">
+      <button class="dock-btn" id="btn-new" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span>New</span>
+      </button>
+      <button class="dock-btn" id="btn-undo" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+        <span>Undo</span>
+      </button>
+      <button class="dock-btn" id="btn-hint" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+        <span>Hint</span>
+      </button>
+      <button class="dock-btn" id="btn-settings" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></svg>
+        <span>Settings</span>
+      </button>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast glass" role="status" aria-live="polite"></div>
+
+  <!-- New game -->
+  <dialog id="dlg-new" aria-labelledby="new-title">
+    <div class="sheet glass strong">
+      <header class="sheet-head">
+        <h2 id="new-title">New Game</h2>
+        <button class="icon-btn" data-close type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </header>
+      <section>
+        <h3>Draw</h3>
+        <div class="segmented" data-setting="drawCount" data-type="number" role="radiogroup" aria-label="Cards drawn from the stock">
+          <button type="button" role="radio" data-value="1">Draw 1</button>
+          <button type="button" role="radio" data-value="3">Draw 3</button>
+        </div>
+      </section>
+      <div class="actions">
+        <button class="btn primary" id="btn-deal" type="button">New Deal</button>
+        <button class="btn" id="btn-restart" type="button">Restart This Deal</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Settings -->
+  <dialog id="dlg-settings" aria-labelledby="settings-title">
+    <div class="sheet glass strong">
+      <header class="sheet-head">
+        <h2 id="settings-title">Settings</h2>
+        <button class="icon-btn" data-close type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </header>
+      <section>
+        <h3>Appearance</h3>
+        <div class="segmented" data-setting="appearance" role="radiogroup" aria-label="Appearance">
+          <button type="button" role="radio" data-value="system">Auto</button>
+          <button type="button" role="radio" data-value="light">Light</button>
+          <button type="button" role="radio" data-value="dark">Dark</button>
+        </div>
+      </section>
+      <section>
+        <h3>Card design</h3>
+        <div class="theme-grid" id="theme-grid" role="radiogroup" aria-label="Card design"></div>
+      </section>
+      <section class="row">
+        <div>
+          <h3>Sound</h3>
+          <p class="note">Card and chime effects</p>
+        </div>
+        <button class="switch" id="sound-switch" type="button" role="switch" aria-label="Sound"><i></i></button>
+      </section>
+      <section id="install-section" hidden>
+        <button class="btn" id="install-btn" type="button" hidden>Install App</button>
+        <p class="note" id="install-ios" hidden>To install, tap the Share button, then <b>Add to Home Screen</b>.</p>
+      </section>
+    </div>
+  </dialog>
+
+  <!-- Win -->
+  <dialog id="dlg-win" aria-labelledby="win-title">
+    <div class="sheet glass strong win">
+      <h2 id="win-title">You won!</h2>
+      <p class="note">Every card is home. Nicely played.</p>
+      <dl class="win-stats">
+        <div><dt>Time</dt><dd id="win-time">0:00</dd></div>
+        <div><dt>Moves</dt><dd id="win-moves">0</dd></div>
+        <div><dt>Score</dt><dd id="win-score">0</dd></div>
+      </dl>
+      <div class="actions">
+        <button class="btn primary" id="btn-again" type="button">Play Again</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
