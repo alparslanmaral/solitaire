@@ -39,12 +39,13 @@ export function createHud() {
   const moves = document.getElementById('stat-moves');
   const time = document.getElementById('stat-time');
   const undo = document.getElementById('btn-undo');
+  const stuckUndo = document.getElementById('stuck-undo');
 
   return {
     update(game) {
       score.textContent = game.state.score;
       moves.textContent = game.state.moves;
-      undo.disabled = !game.canUndo;
+      undo.disabled = stuckUndo.disabled = !game.canUndo;
     },
     showTime(ms) {
       time.textContent = formatTime(ms);

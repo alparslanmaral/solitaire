@@ -233,3 +233,60 @@
 @media (max-height: 480px) and (orientation: landscape) {
   .toast { bottom: 16px; }
 }
+
+/* ---- "no more moves" banner ------------------------------------------------------------ */
+
+.stuck {
+  position: fixed;
+  left: 50%;
+  bottom: calc(max(env(safe-area-inset-bottom), 10px) + 92px);
+  z-index: 49;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100vw - 24px);
+  padding: 8px 8px 8px 20px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 16px) scale(0.95);
+  transition:
+    opacity 0.25s,
+    transform 0.45s var(--ease-spring);
+}
+
+.stuck.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.stuck span { margin-right: 4px; }
+
+.chip {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--glass-edge);
+  border-radius: 999px;
+  background: var(--slot-fill);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.chip:active:not(:disabled) { transform: scale(0.94); }
+.chip:disabled { opacity: 0.4; cursor: default; }
+.chip.primary { background: var(--accent); border-color: transparent; color: var(--accent-ink); }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* A hint toast sits above the banner when both are visible. */
+.stuck-open .toast { bottom: calc(max(env(safe-area-inset-bottom), 10px) + 150px); }
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .stuck { bottom: 16px; }
+  .stuck-open .toast { bottom: 76px; }
+}

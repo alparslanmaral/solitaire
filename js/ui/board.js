@@ -19,12 +19,12 @@ const RECYCLE_ICON =
 export class Board {
   /**
    * @param {HTMLElement} el
-   * @param {{ sound: any, onChange: () => void, onWin: () => void, onMessage: (text: string) => void }} hooks
+   * @param {{ sound: any, onChange: () => void, onWin: () => void, onStuck: (stuck: boolean) => void, onMessage: (text: string) => void }} hooks
    */
-  constructor(el, { sound, onChange, onWin, onMessage }) {
+  constructor(el, { sound, onChange, onWin, onStuck, onMessage }) {
     this.el = el;
     this.sound = sound;
-    this.hooks = { onChange, onWin, onMessage };
+    this.hooks = { onChange, onWin, onStuck, onMessage };
     this.game = null;
     this.theme = null;
     this.locked = false;
@@ -236,9 +236,11 @@ export class Board {
       void this.el.offsetWidth;
       this.el.classList.remove('no-anim');
       this.hooks.onChange();
+      this.#reportStuck();
       return;
     }
 
+    this.hooks.onStuck(false);
     this.locked = true;
     // Stage: the whole deck face down on the stock pile, no transitions.
     this.el.classList.add('no-anim');
@@ -276,6 +278,7 @@ export class Board {
       card._inner.style.transitionDelay = '';
     });
     this.locked = false;
+    this.#reportStuck();
   }
 
   #resetCards() {
@@ -306,7 +309,13 @@ export class Board {
     this.hooks.onChange();
 
     if (this.game.isWon()) this.#celebrate();
-    else if (this.game.canAutoComplete()) this.#autoComplete();
+    else if (this.game.canAutoComplete() && this.game.nextAutoMove()) this.#autoComplete();
+    else this.#reportStuck();
+  }
+
+  /** Tell the page whether the game has run out of useful moves. */
+  #reportStuck() {
+    this.hooks.onStuck(this.game.isStuck());
   }
 
   draw() {
@@ -322,6 +331,7 @@ export class Board {
     this.#render();
     this.sound.play('undo');
     this.hooks.onChange();
+    this.#reportStuck();
     return true;
   }
 
@@ -329,7 +339,7 @@ export class Board {
     if (this.locked) return;
     this.#clearHint();
     const hint = this.game.hint();
-    if (!hint) {
+    if (!hint || (hint.draw && this.game.isStuck())) {
       this.hooks.onMessage('No moves left. Try undo, or start a new game.');
       this.sound.play('error');
       return;
@@ -392,6 +402,7 @@ export class Board {
     if (run !== this.run) return;
     this.locked = false;
     if (this.game.isWon()) this.#celebrate();
+    else this.#reportStuck();
   }
 
   /** Cards bounce off the table, one after another, king first. */

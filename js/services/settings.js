@@ -1,8 +1,10 @@
 import { storage } from './storage.js';
 import { DEFAULT_CARD_THEME } from '../cards/index.js';
+import { DEFAULT_BACKGROUND } from '../backgrounds.js';
 
 const DEFAULTS = {
   appearance: 'system', // 'system' | 'light' | 'dark'
+  background: DEFAULT_BACKGROUND,
   cardTheme: DEFAULT_CARD_THEME,
   sound: true,
   drawCount: 1, // 1 | 3

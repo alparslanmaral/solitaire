@@ -6,7 +6,7 @@
 // - Requests are answered from the cache first and refreshed in the background, so an
 //   update shows up on the *next* launch. Bump CACHE_VERSION to drop old caches.
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE = `solitaire-${CACHE_VERSION}`;
 
 const SHELL = [
@@ -14,10 +14,12 @@ const SHELL = [
   'index.html',
   'manifest.webmanifest',
   'css/base.css',
+  'css/backgrounds.css',
   'css/glass.css',
   'css/board.css',
   'css/dialogs.css',
   'js/main.js',
+  'js/backgrounds.js',
   'js/core/cards.js',
   'js/core/klondike.js',
   'js/core/rng.js',

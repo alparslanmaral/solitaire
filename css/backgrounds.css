@@ -1,0 +1,91 @@
+/* Background palettes. Each one sets the page gradient, three colour blobs behind the glass, and the accent colour,
+   once for dark and once for light mode.
+
+   To add a palette: copy a block (dark + light), change the id and the colours, then add { id, name } to
+   js/backgrounds.js. The `[data-bg-preview]` selector is what draws the little swatch in Settings.
+
+   Accent colours on dark need a dark --accent-ink; on light, a white one. */
+
+/* ---- Emerald (default) ---- */
+:root[data-theme='dark'][data-bg='emerald'],
+:root[data-theme='dark'] [data-bg-preview='emerald'] {
+  --bg-1: #06151a; --bg-2: #0c2a2b;
+  --blob-1: #11b886; --blob-2: #2a6df4; --blob-3: #8b5cf6;
+  --accent: #36d6a2; --accent-ink: #032218;
+}
+:root[data-theme='light'][data-bg='emerald'],
+:root[data-theme='light'] [data-bg-preview='emerald'] {
+  --bg-1: #eaf6ef; --bg-2: #d8ebf6;
+  --blob-1: #5fe0b0; --blob-2: #8ec1ff; --blob-3: #ffd5b0;
+  --accent: #0e9f72; --accent-ink: #ffffff;
+}
+
+/* ---- Ocean ---- */
+:root[data-theme='dark'][data-bg='ocean'],
+:root[data-theme='dark'] [data-bg-preview='ocean'] {
+  --bg-1: #050f1f; --bg-2: #0a2540;
+  --blob-1: #2f80ff; --blob-2: #00b8d4; --blob-3: #6d5bff;
+  --accent: #5aa9ff; --accent-ink: #021326;
+}
+:root[data-theme='light'][data-bg='ocean'],
+:root[data-theme='light'] [data-bg-preview='ocean'] {
+  --bg-1: #e8f1fb; --bg-2: #d3e4f6;
+  --blob-1: #8ec5ff; --blob-2: #7fe3ee; --blob-3: #c4b5fd;
+  --accent: #1f6feb; --accent-ink: #ffffff;
+}
+
+/* ---- Sunset ---- */
+:root[data-theme='dark'][data-bg='sunset'],
+:root[data-theme='dark'] [data-bg-preview='sunset'] {
+  --bg-1: #1a0c10; --bg-2: #2e1410;
+  --blob-1: #ff6b4a; --blob-2: #ff3d6e; --blob-3: #ffb020;
+  --accent: #ff9466; --accent-ink: #2b0d05;
+}
+:root[data-theme='light'][data-bg='sunset'],
+:root[data-theme='light'] [data-bg-preview='sunset'] {
+  --bg-1: #fff1e6; --bg-2: #ffe1e6;
+  --blob-1: #ffb48a; --blob-2: #ff9fb8; --blob-3: #ffe08a;
+  --accent: #d9480f; --accent-ink: #ffffff;
+}
+
+/* ---- Rose ---- */
+:root[data-theme='dark'][data-bg='rose'],
+:root[data-theme='dark'] [data-bg-preview='rose'] {
+  --bg-1: #190812; --bg-2: #2b0f26;
+  --blob-1: #f43f8e; --blob-2: #fb7185; --blob-3: #a855f7;
+  --accent: #ff7aa8; --accent-ink: #2a0615;
+}
+:root[data-theme='light'][data-bg='rose'],
+:root[data-theme='light'] [data-bg-preview='rose'] {
+  --bg-1: #ffeef4; --bg-2: #fbe0ee;
+  --blob-1: #fda4c4; --blob-2: #fecdd3; --blob-3: #e9d5ff;
+  --accent: #d6336c; --accent-ink: #ffffff;
+}
+
+/* ---- Lavender ---- */
+:root[data-theme='dark'][data-bg='lavender'],
+:root[data-theme='dark'] [data-bg-preview='lavender'] {
+  --bg-1: #0f0a1f; --bg-2: #1c1238;
+  --blob-1: #8b5cf6; --blob-2: #d946ef; --blob-3: #3b82f6;
+  --accent: #b79cff; --accent-ink: #1a0b3d;
+}
+:root[data-theme='light'][data-bg='lavender'],
+:root[data-theme='light'] [data-bg-preview='lavender'] {
+  --bg-1: #f1ebff; --bg-2: #e3e8ff;
+  --blob-1: #c4b5fd; --blob-2: #f0abfc; --blob-3: #a5b4fc;
+  --accent: #7c3aed; --accent-ink: #ffffff;
+}
+
+/* ---- Graphite (neutral) ---- */
+:root[data-theme='dark'][data-bg='graphite'],
+:root[data-theme='dark'] [data-bg-preview='graphite'] {
+  --bg-1: #0b0c0f; --bg-2: #1a1d23;
+  --blob-1: #4b5563; --blob-2: #64748b; --blob-3: #52525b;
+  --accent: #a9bdd1; --accent-ink: #0b0c0f;
+}
+:root[data-theme='light'][data-bg='graphite'],
+:root[data-theme='light'] [data-bg-preview='graphite'] {
+  --bg-1: #eef0f3; --bg-2: #dde2e8;
+  --blob-1: #cbd5e1; --blob-2: #e2e8f0; --blob-3: #d4d4d8;
+  --accent: #334155; --accent-ink: #ffffff;
+}

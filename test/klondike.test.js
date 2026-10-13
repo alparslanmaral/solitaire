@@ -187,3 +187,71 @@ test('card helpers', () => {
   assert.equal(suitOf(card(2, 7)), 2);
   assert.equal(rankOf(card(2, 7)), 7);
 });
+
+test('draw 3: every recycle shifts the groups of three', () => {
+  const g = Klondike.newGame({ seed: 8, drawCount: 3 });
+  const sizes = [];
+  for (let pass = 0; pass < 4; pass++) {
+    // Draw a whole pass, noting how many cards the first draw took.
+    const first = g.state.stock.length;
+    g.draw();
+    sizes.push(first - g.state.stock.length);
+    while (g.state.stock.length) g.draw();
+    g.draw(); // recycle
+  }
+  assert.deepEqual(sizes, [3, 1, 2, 3]);
+});
+
+test('draw 1 is unaffected by recycling', () => {
+  const g = Klondike.newGame({ seed: 8, drawCount: 1 });
+  while (g.state.stock.length) g.draw();
+  g.draw();
+  g.draw();
+  assert.equal(g.state.waste.length, 1);
+});
+
+test('isStuck: a dead position with nothing left in the stock', () => {
+  const g = emptyGame({ tableau: [[card(0, 5)], [card(0, 7)], [card(3, 9)], [], [], [], []] });
+  // Only kings may enter empty columns, and none of these fit one another or a foundation.
+  assert.equal(g.isStuck(), true);
+});
+
+test('isStuck: stock cards that cannot be played do not count as moves', () => {
+  for (const drawCount of [1, 3]) {
+    const g = emptyGame({
+      drawCount,
+      stock: [card(0, 2), card(1, 9), card(3, 4)],
+      tableau: [[card(0, 5)], [card(0, 7)], [card(3, 9)], [], [], [], []],
+    });
+    assert.equal(g.isStuck(), true, `draw ${drawCount}`);
+  }
+});
+
+test('isStuck: a playable card hiding in the stock means the game goes on', () => {
+  for (const drawCount of [1, 3]) {
+    // Nothing on the table fits, but the 6 of hearts (buried in the stock) goes on the black 7.
+    const g = emptyGame({
+      drawCount,
+      stock: [card(1, 6), card(0, 2), card(3, 4), card(1, 9)],
+      tableau: [[card(0, 5)], [card(0, 7)], [card(3, 9)], [], [], [], []],
+    });
+    assert.equal(g.hasProductiveMove(), false);
+    assert.equal(g.isStuck(), false, `draw ${drawCount}`);
+  }
+});
+
+test('isStuck: moves that uncover a hidden card count as progress', () => {
+  const up = Array(52).fill(true);
+  up[card(2, 9)] = false;
+  const g = emptyGame({ up, tableau: [[card(2, 9), card(1, 5)], [card(0, 6)], [], [], [], [], []] });
+  assert.equal(g.isStuck(), false);
+});
+
+test('isStuck terminates on random deals and does not change the game', () => {
+  for (let seed = 1; seed <= 150; seed++) {
+    const g = Klondike.newGame({ seed, drawCount: seed % 2 ? 1 : 3 });
+    const before = JSON.stringify(g.state);
+    g.isStuck();
+    assert.equal(JSON.stringify(g.state), before);
+  }
+});

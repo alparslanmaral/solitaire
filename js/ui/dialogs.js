@@ -1,6 +1,7 @@
 // The three sheets: New Game, Settings and the win screen.
 
 import { CARDS } from '../core/cards.js';
+import { BACKGROUNDS } from '../backgrounds.js';
 import { installMode, promptInstall, onInstallChange } from '../services/pwa.js';
 import { formatTime } from './hud.js';
 
@@ -79,6 +80,31 @@ function buildThemeGrid(grid, themes, settings) {
   return sync;
 }
 
+function buildBackgroundGrid(grid, settings) {
+  const swatches = BACKGROUNDS.map(({ id, name }) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'bg-swatch';
+    btn.setAttribute('role', 'radio');
+    btn.dataset.id = id;
+    btn.innerHTML = '<i></i><span></span>';
+    btn.firstChild.dataset.bgPreview = id;
+    btn.lastChild.textContent = name;
+    return btn;
+  });
+  grid.replaceChildren(...swatches);
+
+  const sync = () => swatches.forEach((b) => b.setAttribute('aria-checked', b.dataset.id === settings.get('background')));
+  grid.addEventListener('click', (e) => {
+    const btn = e.target.closest('.bg-swatch');
+    if (!btn) return;
+    settings.set('background', btn.dataset.id);
+    sync();
+  });
+  sync();
+  return sync;
+}
+
 /**
  * @param {{ settings: any, themes: any[], sound: any,
  *           onDeal: () => void, onRestart: () => void, onAgain: () => void }} deps
@@ -90,6 +116,7 @@ export function initDialogs({ settings, themes, sound, onDeal, onRestart, onAgai
   [dlgNew, dlgSettings, dlgWin].forEach(wire);
 
   const syncers = [...document.querySelectorAll('.segmented')].map((el) => bindSegmented(el, settings));
+  syncers.push(buildBackgroundGrid($('bg-grid'), settings));
   syncers.push(buildThemeGrid($('theme-grid'), themes, settings));
 
   const soundSwitch = $('sound-switch');

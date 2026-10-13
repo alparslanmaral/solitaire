@@ -22,10 +22,12 @@
       var a = (JSON.parse(localStorage.getItem('solitaire:settings')) || {}).appearance || 'system';
       var dark = a === 'dark' || (a === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
       document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      document.documentElement.dataset.bg = (JSON.parse(localStorage.getItem('solitaire:settings')) || {}).background || 'emerald';
     } catch (e) {}
   </script>
 
   <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/backgrounds.css">
   <link rel="stylesheet" href="css/glass.css">
   <link rel="stylesheet" href="css/board.css">
   <link rel="stylesheet" href="css/dialogs.css">
@@ -62,6 +64,11 @@
     </nav>
   </div>
 
+  <div id="stuck" class="stuck glass" role="alert">
+    <span>No more moves</span>
+    <button class="chip" id="stuck-undo" type="button">Undo</button>
+    <button class="chip primary" id="stuck-new" type="button">New Game</button>
+  </div>
   <div id="toast" class="toast glass" role="status" aria-live="polite"></div>
 
   <!-- New game -->
@@ -99,6 +106,10 @@
           <button type="button" role="radio" data-value="light">Light</button>
           <button type="button" role="radio" data-value="dark">Dark</button>
         </div>
+      </section>
+      <section>
+        <h3>Background</h3>
+        <div class="bg-grid" id="bg-grid" role="radiogroup" aria-label="Background"></div>
       </section>
       <section>
         <h3>Card design</h3>

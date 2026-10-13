@@ -37,6 +37,8 @@ export class Klondike {
       up,
       score: 0,
       moves: 0,
+      recycles: 0, // how many times the waste has been turned back into the stock
+      nextDraw: 0, // 0 = draw the normal amount; otherwise the size of the next draw (see draw())
     });
   }
 
@@ -150,7 +152,8 @@ export class Klondike {
     const s = this.state;
     if (s.stock.length > 0) {
       this.#push();
-      const n = Math.min(s.drawCount, s.stock.length);
+      const n = Math.min(s.nextDraw || s.drawCount, s.stock.length);
+      s.nextDraw = 0;
       const cards = [];
       for (let i = 0; i < n; i++) {
         const id = s.stock.pop();
@@ -169,6 +172,10 @@ export class Klondike {
         s.stock.push(id);
       }
       s.score = Math.max(0, s.score - (s.drawCount === 1 ? 100 : 20));
+      // Draw 3: the order is kept, but the first draw of each new pass takes 1, then 2, then 3 cards.
+      // That shifts the groups of three, so a different card lands on top each time round.
+      s.recycles = (s.recycles ?? 0) + 1;
+      s.nextDraw = s.drawCount === 3 ? ((s.recycles - 1) % 3) + 1 : 0;
       s.moves++;
       return { type: 'recycle' };
     }
@@ -288,6 +295,70 @@ export class Klondike {
 
     if (s.stock.length > 0 || s.waste.length > 0) return { draw: true };
     return null;
+  }
+
+  // ---- dead-end detection --------------------------------------------------
+
+  #fitsFoundation(id) {
+    return this.state.foundations.some((pile) => {
+      if (pile.length === 0) return rankOf(id) === 1;
+      const top = pile[pile.length - 1];
+      return suitOf(top) === suitOf(id) && rankOf(top) + 1 === rankOf(id);
+    });
+  }
+
+  #fitsOn(id, pile) {
+    if (pile.length === 0) return rankOf(id) === 13;
+    const top = pile[pile.length - 1];
+    return this.state.up[top] && isRed(top) !== isRed(id) && rankOf(top) === rankOf(id) + 1;
+  }
+
+  /**
+   * Is there a move on the table right now (ignoring the stock) that gets somewhere?
+   * Shuffling a card between two equal columns doesn't count.
+   */
+  hasProductiveMove() {
+    const s = this.state;
+    const wasteTop = s.waste[s.waste.length - 1];
+    if (wasteTop !== undefined && (this.#fitsFoundation(wasteTop) || s.tableau.some((p) => this.#fitsOn(wasteTop, p)))) {
+      return true;
+    }
+    for (let c = 0; c < 7; c++) {
+      const col = s.tableau[c];
+      if (!col.length) continue;
+      if (this.#fitsFoundation(col[col.length - 1])) return true;
+      const first = col.findIndex((id) => s.up[id]);
+      for (let pos = first; pos < col.length; pos++) {
+        for (let d = 0; d < 7; d++) {
+          if (d === c || !this.#fitsOn(col[pos], s.tableau[d])) continue;
+          if (pos === first) {
+            if (first > 0) return true; // uncovers a hidden card
+            if (s.tableau[d].length > 0) return true; // empties a column
+          } else if (this.#fitsFoundation(col[pos - 1])) {
+            return true; // exposes a card that can go home
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * True when nothing useful can be done any more: no productive move on the table, and no card
+   * that turns up on the waste (however many times the stock is cycled) opens one.
+   */
+  isStuck() {
+    if (this.isWon()) return false;
+    const sim = new Klondike(snapshot(this.state));
+    const maxRecycles = this.state.drawCount === 3 ? 3 : 1; // Draw 3 has three different groupings
+    let recycles = 0;
+    for (let guard = 0; guard < 400; guard++) {
+      if (sim.hasProductiveMove()) return false;
+      const result = sim.draw();
+      if (!result) return true;
+      if (result.type === 'recycle' && ++recycles > maxRecycles) return true;
+    }
+    return true;
   }
 
   /** The next card auto-complete would send to a foundation: { id, dest } | null. */

@@ -18,8 +18,9 @@ const $ = (id) => document.getElementById(id);
 const settings = createSettings();
 const sound = createSound(settings);
 
-applyAppearance(settings.get('appearance'));
-watchAppearance(() => settings.get('appearance'));
+const look = () => applyAppearance(settings.get('appearance'), settings.get('background'));
+look();
+watchAppearance(() => ({ appearance: settings.get('appearance'), background: settings.get('background') }));
 cardThemes.mountStyles();
 
 // ---- game -------------------------------------------------------------------------------
@@ -33,6 +34,7 @@ const board = new Board($('board'), {
   sound,
   onChange: handleChange,
   onWin: handleWin,
+  onStuck: handleStuck,
   onMessage: (text) => showToast(text),
 });
 board.setCardTheme(cardThemes.get(settings.get('cardTheme')));
@@ -57,8 +59,28 @@ function handleWin() {
   }, 1600);
 }
 
+// "No more moves" banner: shown a beat after the game runs dry, hidden as soon as it isn't true any more.
+const stuckBanner = $('stuck');
+let stuckTimer = 0;
+
+function handleStuck(stuck) {
+  clearTimeout(stuckTimer);
+  if (!stuck) return setStuckVisible(false);
+  if (stuckBanner.classList.contains('show')) return;
+  stuckTimer = setTimeout(() => {
+    setStuckVisible(true);
+    sound.play('error');
+  }, 700);
+}
+
+function setStuckVisible(visible) {
+  stuckBanner.classList.toggle('show', visible);
+  document.body.classList.toggle('stuck-open', visible);
+}
+
 function startGame({ seed = newSeed(), drawCount = settings.get('drawCount') } = {}) {
   clearTimeout(winTimer);
+  handleStuck(false);
   dialogs.closeAll();
   game = Klondike.newGame({ seed, drawCount });
   stopwatch.set(0, false);
@@ -106,6 +128,8 @@ press('btn-settings', () => {
 });
 press('btn-undo', () => board.undo());
 press('btn-hint', () => board.hint());
+press('stuck-undo', () => board.undo());
+press('stuck-new', () => dialogs.openNew());
 
 document.addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey || document.querySelector('dialog[open]')) return;
@@ -120,7 +144,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 settings.subscribe((key, value) => {
-  if (key === 'appearance') applyAppearance(value);
+  if (key === 'appearance' || key === 'background') look();
   else if (key === 'cardTheme') board.setCardTheme(cardThemes.get(value));
 });
 

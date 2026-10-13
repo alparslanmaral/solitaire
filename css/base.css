@@ -1,4 +1,5 @@
-/* Design tokens, page background and overall layout. */
+/* Design tokens, page background and overall layout.
+   Background colours (--bg-*, --blob-*, --accent) live in backgrounds.css. */
 
 :root {
   --font: -apple-system, BlinkMacSystemFont, 'SF Pro Rounded', ui-rounded, 'Segoe UI', Roboto, system-ui, sans-serif;
@@ -8,11 +9,6 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg-1: #06151a;
-  --bg-2: #0c2a2b;
-  --blob-1: #11b886;
-  --blob-2: #2a6df4;
-  --blob-3: #8b5cf6;
   --blob-opacity: 0.4;
   --text: #f2f7f5;
   --text-dim: rgba(242, 247, 245, 0.6);
@@ -25,17 +21,10 @@
   --slot-fill: rgba(255, 255, 255, 0.06);
   --slot-edge: rgba(255, 255, 255, 0.14);
   --thumb: rgba(255, 255, 255, 0.2);
-  --accent: #36d6a2;
-  --accent-ink: #032218;
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg-1: #eaf6ef;
-  --bg-2: #d8ebf6;
-  --blob-1: #5fe0b0;
-  --blob-2: #8ec1ff;
-  --blob-3: #ffd5b0;
   --blob-opacity: 0.65;
   --text: #10201a;
   --text-dim: rgba(16, 32, 26, 0.56);
@@ -48,8 +37,6 @@
   --slot-fill: rgba(16, 70, 46, 0.06);
   --slot-edge: rgba(16, 70, 46, 0.13);
   --thumb: #ffffff;
-  --accent: #0e9f72;
-  --accent-ink: #ffffff;
 }
 
 * {

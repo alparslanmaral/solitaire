@@ -4,7 +4,8 @@ A calm, modern Klondike Solitaire for desktop and mobile. Installable as a PWA, 
 
 - Drag and drop, or just tap a card to send it where it belongs
 - Draw 1 / Draw 3, undo, hints, auto-complete, resume where you left off
-- Light, dark, or follow the system
+- Tells you when the game is stuck (no useful move left, even after cycling the stock)
+- Light, dark, or follow the system, plus six background colours (Emerald, Ocean, Sunset, Rose, Lavender, Graphite)
 - Switchable card designs (Classic, Modern, Midnight), easy to add your own
 - Synthesised sound effects (no audio files)
 
@@ -26,7 +27,7 @@ Keyboard: `U` undo · `H` hint · `N` new game · `Space` draw.
 
 ```
 index.html            page + dialogs
-css/                  base (tokens, layout) · glass · board · dialogs
+css/                  base (tokens, layout) · backgrounds (palettes) · glass · board · dialogs
 js/main.js            wires everything together
 js/core/              rules, no DOM: klondike.js, cards.js, rng.js   (tested in test/)
 js/ui/                board.js (layout, animation, drag & drop) · dialogs · hud · toast
@@ -79,9 +80,18 @@ Handy when drawing: `suit()`, `pips()`, `cardSvg()` and `flipped()` in [`js/card
 (the Classic theme shows how they fit together), and `cqw` units in `css` (1cqw = 1 % of the card's width, so
 the design scales at any size). Theme CSS is global, so prefix class names with your theme id.
 
+## Adding a background colour
+
+1. In [`css/backgrounds.css`](css/backgrounds.css) copy a palette (a dark block and a light block), change the id and colours.
+2. Add `{ id, name }` to [`js/backgrounds.js`](js/backgrounds.js). It appears in Settings → Background.
+
 ## Notes
 
 - Scoring follows the usual Klondike rules (waste→tableau +5, to foundation +10, turning a card +5,
   foundation→tableau −15, recycling the waste −100 in Draw 1 / −20 in Draw 3).
+- Draw 3 keeps the card order when the stock is turned over again, but the first draw of each new pass takes 1, then 2,
+  then 3 cards. That shifts the groups of three, so different cards come up each time round.
+- "Stuck" means no productive move on the table (one that flips a hidden card, empties a column, or sends a card home)
+  and none that any card reachable by cycling the stock would open.
 - Cached assets are refreshed in the background, so an update appears on the *next* launch.
 - Not every deal is winnable, as in any random Klondike.
