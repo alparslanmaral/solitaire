@@ -8,6 +8,7 @@
 
 import { mulberry32, shuffle } from './rng.js';
 import { rankOf, suitOf, isRed } from './cards.js';
+import { streakBonus } from './scoring.js';
 
 const HISTORY_LIMIT = 300;
 const snapshot = (state) => JSON.parse(JSON.stringify(state));
@@ -37,6 +38,8 @@ export class Klondike {
       up,
       score: 0,
       moves: 0,
+      streak: 0, // moves in a row that earned points
+      bestStreak: 0,
       recycles: 0, // how many times the waste has been turned back into the stock
       nextDraw: 0, // 0 = draw the normal amount; otherwise the size of the next draw (see draw())
     });
@@ -174,6 +177,7 @@ export class Klondike {
       s.score = Math.max(0, s.score - (s.drawCount === 1 ? 100 : 20));
       // Draw 3: the order is kept, but the first draw of each new pass takes 1, then 2, then 3 cards.
       // That shifts the groups of three, so a different card lands on top each time round.
+      s.streak = 0;
       s.recycles = (s.recycles ?? 0) + 1;
       s.nextDraw = s.drawCount === 3 ? ((s.recycles - 1) % 3) + 1 : 0;
       s.moves++;
@@ -194,21 +198,35 @@ export class Klondike {
     const target = dest.pile === 'foundation' ? s.foundations[dest.index] : s.tableau[dest.index];
     target.push(...cards);
 
-    if (dest.pile === 'foundation') s.score += 10;
-    else if (from.pile === 'waste') s.score += 5;
-    else if (from.pile === 'foundation') s.score = Math.max(0, s.score - 15);
+    // Points for the move itself ...
+    let gain = 0;
+    if (dest.pile === 'foundation') gain += 10;
+    else if (from.pile === 'waste') gain += 5;
+    else if (from.pile === 'foundation') gain -= 15;
 
     let flipped = null;
     if (from.pile === 'tableau' && source.length > 0) {
       const top = source[source.length - 1];
       if (!s.up[top]) {
         s.up[top] = true;
-        s.score += 5;
+        gain += 5;
         flipped = top;
       }
     }
+    s.score = Math.max(0, s.score + gain);
+
+    // ... and the streak: every scoring move extends it, anything else ends it.
+    let bonus = 0;
+    if (gain > 0) {
+      s.streak = (s.streak ?? 0) + 1;
+      s.bestStreak = Math.max(s.bestStreak ?? 0, s.streak);
+      bonus = streakBonus(s.streak);
+      s.score += bonus;
+    } else {
+      s.streak = 0;
+    }
     s.moves++;
-    return { type: 'move', from, dest, cards, flipped, toFoundation: dest.pile === 'foundation' };
+    return { type: 'move', from, dest, cards, flipped, toFoundation: dest.pile === 'foundation', gain, streak: s.streak, streakBonus: bonus };
   }
 
   // ---- helpers for tap-to-move, hints and auto-complete -------------------

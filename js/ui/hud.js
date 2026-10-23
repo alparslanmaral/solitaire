@@ -35,20 +35,59 @@ export class Stopwatch {
 }
 
 export function createHud() {
-  const score = document.getElementById('stat-score');
-  const moves = document.getElementById('stat-moves');
-  const time = document.getElementById('stat-time');
-  const undo = document.getElementById('btn-undo');
-  const stuckUndo = document.getElementById('stuck-undo');
+  const $ = (id) => document.getElementById(id);
+  const score = $('stat-score');
+  const moves = $('stat-moves');
+  const time = $('stat-time');
+  const undo = $('btn-undo');
+  const stuckUndo = $('stuck-undo');
+  const streakBox = $('stat-streak');
+  const streakValue = $('stat-streak-value');
+  const opp = $('opp');
+  const pop = $('pop');
+  let popTimer = 0;
 
   return {
     update(game) {
       score.textContent = game.state.score;
       moves.textContent = game.state.moves;
       undo.disabled = stuckUndo.disabled = !game.canUndo;
+      const streak = game.state.streak ?? 0;
+      streakBox.hidden = streak < 2;
+      streakValue.textContent = `x${streak}`;
+      streakBox.classList.toggle('hot', streak >= 5);
     },
+
     showTime(ms) {
       time.textContent = formatTime(ms);
+    },
+
+    /** A short floating message, e.g. when a streak pays a bonus. */
+    pop(text) {
+      clearTimeout(popTimer);
+      pop.textContent = text;
+      pop.classList.remove('show');
+      void pop.offsetWidth; // restart the animation
+      pop.classList.add('show');
+      popTimer = setTimeout(() => pop.classList.remove('show'), 1800);
+    },
+
+    /**
+     * The other player's strip. `kind` is 'pvp' (score, moves, progress) or 'coop' (just their moves);
+     * pass null to hide it.
+     */
+    setOpponent(info, kind = 'pvp') {
+      opp.hidden = !info;
+      if (!info) return;
+      opp.dataset.kind = kind;
+      $('opp-name').textContent = info.name;
+      $('opp-score').textContent = info.score ?? 0;
+      $('opp-moves').textContent = info.moves ?? 0;
+      $('opp-bar').style.width = `${Math.round(((info.found ?? 0) / 52) * 100)}%`;
+    },
+
+    setOpponentOnline(online) {
+      opp.classList.toggle('offline', !online);
     },
   };
 }

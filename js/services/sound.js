@@ -82,6 +82,12 @@ export function createSound(settings) {
       tone({ at: 0.09, freq: 1175, dur: 0.22, gain: 0.07 });
     },
     ui: () => burst({ freq: 3000, q: 1.2, dur: 0.025, gain: 0.08 }),
+    tick: () => tone({ freq: 660, dur: 0.12, gain: 0.1 }),
+    go: () => {
+      tone({ freq: 988, dur: 0.3, gain: 0.12 });
+      tone({ at: 0.08, freq: 1319, dur: 0.4, gain: 0.1 });
+    },
+    streak: () => [784, 988, 1319].forEach((freq, i) => tone({ at: i * 0.07, freq, dur: 0.35, gain: 0.1 })),
     win: () => {
       [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((freq, i) => {
         tone({ at: i * 0.11, freq, dur: 0.7, gain: 0.12 });

@@ -1,17 +1,16 @@
-// The three sheets: New Game, Settings and the win screen.
+// The shared sheet helpers, plus the New Game and Settings sheets.
 
 import { CARDS } from '../core/cards.js';
 import { BACKGROUNDS } from '../backgrounds.js';
 import { installMode, promptInstall, onInstallChange } from '../services/pwa.js';
-import { formatTime } from './hud.js';
 
 const $ = (id) => document.getElementById(id);
 
-function open(dlg) {
+export function openDialog(dlg) {
   if (!dlg.open) dlg.showModal();
 }
 
-function close(dlg) {
+export function closeDialog(dlg) {
   if (!dlg.open || dlg.classList.contains('closing')) return;
   dlg.classList.add('closing');
   setTimeout(() => {
@@ -20,12 +19,12 @@ function close(dlg) {
   }, 200);
 }
 
-function wire(dlg) {
-  dlg.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => close(dlg)));
-  dlg.addEventListener('click', (e) => e.target === dlg && close(dlg)); // tap on the backdrop
+export function wireDialog(dlg) {
+  dlg.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => closeDialog(dlg)));
+  dlg.addEventListener('click', (e) => e.target === dlg && closeDialog(dlg)); // tap on the backdrop
   dlg.addEventListener('cancel', (e) => {
     e.preventDefault();
-    close(dlg);
+    closeDialog(dlg);
   });
 }
 
@@ -109,11 +108,10 @@ function buildBackgroundGrid(grid, settings) {
  * @param {{ settings: any, themes: any[], sound: any,
  *           onDeal: () => void, onRestart: () => void, onAgain: () => void }} deps
  */
-export function initDialogs({ settings, themes, sound, onDeal, onRestart, onAgain }) {
+export function initDialogs({ settings, themes, sound, onDeal, onRestart }) {
   const dlgNew = $('dlg-new');
   const dlgSettings = $('dlg-settings');
-  const dlgWin = $('dlg-win');
-  [dlgNew, dlgSettings, dlgWin].forEach(wire);
+  [dlgNew, dlgSettings].forEach(wireDialog);
 
   const syncers = [...document.querySelectorAll('.segmented')].map((el) => bindSegmented(el, settings));
   syncers.push(buildBackgroundGrid($('bg-grid'), settings));
@@ -142,35 +140,29 @@ export function initDialogs({ settings, themes, sound, onDeal, onRestart, onAgai
   syncers.push(syncInstall);
 
   $('btn-deal').addEventListener('click', () => {
-    close(dlgNew);
+    closeDialog(dlgNew);
     onDeal();
   });
   $('btn-restart').addEventListener('click', () => {
-    close(dlgNew);
+    closeDialog(dlgNew);
     onRestart();
-  });
-  $('btn-again').addEventListener('click', () => {
-    close(dlgWin);
-    onAgain();
   });
 
   return {
     openNew() {
       syncers.forEach((fn) => fn());
-      open(dlgNew);
+      openDialog(dlgNew);
     },
     openSettings() {
       syncers.forEach((fn) => fn());
-      open(dlgSettings);
+      openDialog(dlgSettings);
     },
-    showWin({ elapsed, moves, score }) {
-      $('win-time').textContent = formatTime(elapsed);
-      $('win-moves').textContent = moves;
-      $('win-score').textContent = score;
-      open(dlgWin);
+    /** Re-read every setting into its control (for sheets that live elsewhere but share controls). */
+    syncAll() {
+      syncers.forEach((fn) => fn());
     },
     closeAll() {
-      [dlgNew, dlgSettings, dlgWin].forEach(close);
+      [dlgNew, dlgSettings, $('dlg-mp'), $('dlg-leave')].forEach(closeDialog);
     },
   };
 }

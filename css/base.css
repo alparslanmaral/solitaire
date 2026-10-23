@@ -104,7 +104,7 @@ button {
     max(env(safe-area-inset-left), 8px);
 }
 
-.hud { grid-area: hud; justify-self: center; }
+.top { grid-area: hud; justify-self: center; }
 .dock { grid-area: dock; justify-self: center; }
 
 .board {
@@ -124,7 +124,7 @@ button {
     grid-template-areas: 'hud dock' 'board board';
     gap: 6px 12px;
   }
-  .hud { justify-self: start; }
+  .top { justify-self: start; }
   .dock { justify-self: end; }
 }
 

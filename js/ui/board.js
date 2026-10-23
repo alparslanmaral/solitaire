@@ -19,7 +19,7 @@ const RECYCLE_ICON =
 export class Board {
   /**
    * @param {HTMLElement} el
-   * @param {{ sound: any, onChange: () => void, onWin: () => void, onStuck: (stuck: boolean) => void, onMessage: (text: string) => void }} hooks
+   * @param {{ sound: any, onChange: (result?: object) => void, onWin: () => void, onStuck: (stuck: boolean) => void, onMessage: (text: string) => void }} hooks
    */
   constructor(el, { sound, onChange, onWin, onStuck, onMessage }) {
     this.el = el;
@@ -27,7 +27,9 @@ export class Board {
     this.hooks = { onChange, onWin, onStuck, onMessage };
     this.game = null;
     this.theme = null;
-    this.locked = false;
+    this.locked = false; // busy with an animation of our own
+    this.frozen = false; // held still from outside (countdown, end of a match)
+    this.autoplay = true; // run auto-complete after the final cards are exposed
     this.run = 0; // bumps whenever a long animation must stop (new game, ...)
     this.press = null;
     this.drag = null;
@@ -166,6 +168,7 @@ export class Board {
 
   /** Move every card element to where the state says it belongs. */
   #render({ delays } = {}) {
+    let movedCards = 0;
     this.pos = this.#computePositions();
     const { up, stock, waste, foundations } = this.game.state;
 
@@ -179,6 +182,7 @@ export class Board {
       const p = this.pos[id];
       card.classList.toggle('buried', buried.has(id));
       const moved = card._x !== p.x || card._y !== p.y;
+      if (moved) movedCards++;
       card._x = p.x;
       card._y = p.y;
       card._z = p.z;
@@ -207,6 +211,7 @@ export class Board {
       card.style.transitionDelay = d ? `${d.move}ms` : '';
       card._inner.style.transitionDelay = d ? `${d.flip}ms` : '';
     });
+    return movedCards;
   }
 
   #onResize() {
@@ -306,10 +311,10 @@ export class Board {
       this.sound.play('recycle');
     }
 
-    this.hooks.onChange();
+    this.hooks.onChange(result);
 
     if (this.game.isWon()) this.#celebrate();
-    else if (this.game.canAutoComplete() && this.game.nextAutoMove()) this.#autoComplete();
+    else if (this.autoplay && this.game.canAutoComplete() && this.game.nextAutoMove()) this.#autoComplete();
     else this.#reportStuck();
   }
 
@@ -318,15 +323,19 @@ export class Board {
     this.hooks.onStuck(this.game.isStuck());
   }
 
+  get #busy() {
+    return this.locked || this.frozen;
+  }
+
   draw() {
-    if (this.locked) return;
+    if (this.#busy) return;
     const result = this.game.draw();
     if (result) this.#afterAction(result);
     else this.sound.play('error');
   }
 
   undo() {
-    if (this.locked || !this.game.undo()) return false;
+    if (this.#busy || !this.game.undo()) return false;
     this.#clearHint();
     this.#render();
     this.sound.play('undo');
@@ -335,8 +344,29 @@ export class Board {
     return true;
   }
 
+  /** Hold the table still (countdown, end of a match). Anything in the player's hand is put back. */
+  freeze(on) {
+    this.frozen = on;
+    if (on) this.#cancelPress();
+  }
+
+  /**
+   * The game was changed from outside (the other player moved, or the host corrected us): show it.
+   * Whatever the player was dragging is put back first, since the cards may no longer be where it was.
+   */
+  sync() {
+    if (!this.game) return;
+    this.#cancelPress();
+    this.#clearHint();
+    const moved = this.#render();
+    if (moved) this.sound.play('place');
+    this.hooks.onChange();
+    if (this.game.isWon()) this.#celebrate();
+    else this.#reportStuck();
+  }
+
   hint() {
-    if (this.locked) return;
+    if (this.#busy) return;
     this.#clearHint();
     const hint = this.game.hint();
     if (!hint || (hint.draw && this.game.isStuck())) {
@@ -396,7 +426,7 @@ export class Board {
       if (!result) break;
       this.#render();
       this.sound.play('foundation');
-      this.hooks.onChange();
+      this.hooks.onChange(result);
       await wait(120);
     }
     if (run !== this.run) return;
@@ -471,7 +501,7 @@ export class Board {
   // ---- pointer input ---------------------------------------------------------------
 
   #onPointerDown(e) {
-    if (this.locked || this.press) return;
+    if (this.#busy || this.press) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     this.sound.unlock();
 
@@ -506,7 +536,7 @@ export class Board {
     if (this.el.hasPointerCapture(e.pointerId)) this.el.releasePointerCapture(e.pointerId);
 
     if (this.drag) return this.#endDrag();
-    if (this.locked) return;
+    if (this.#busy) return;
     if (press.stock) this.draw();
     else this.#tapCard(press.id);
   }

@@ -7,6 +7,7 @@ const DEFAULTS = {
   background: DEFAULT_BACKGROUND,
   cardTheme: DEFAULT_CARD_THEME,
   sound: true,
+  playerName: '',
   drawCount: 1, // 1 | 3
 };
 
