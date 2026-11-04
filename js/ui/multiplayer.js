@@ -94,6 +94,7 @@ export function initMultiplayer({ settings, sound, syncControls, onReady }) {
   // ---- host ------------------------------------------------------------------------------------------
 
   async function createRoom() {
+    settings.set('playerName', cleanName(nameInput.value, ''));
     reset();
     const mine = ++session;
     setView('wait');
@@ -147,6 +148,7 @@ export function initMultiplayer({ settings, sound, syncControls, onReady }) {
   async function join() {
     const code = normalizeCode(codeInput.value);
     if (code.length !== 5) return setJoinStatus('Room codes have 5 characters.');
+    settings.set('playerName', cleanName(nameInput.value, ''));
     reset();
     const mine = ++session;
     $('mp-connect').disabled = true;

@@ -34,6 +34,12 @@ export class Board {
     this.press = null;
     this.drag = null;
     this.hintTimer = 0;
+    // Optional helpers (the cheats menu uses them): keep the best move lit, and play it for you.
+    this.nextMoveProvider = null; // (game) => { id, dest } | { draw: true } | null
+    this.autoHint = false;
+    this.autoPlay = false;
+    this.autoDelay = 600;
+    this.autoTimer = 0;
     this.L = null;
     this.pos = [];
 
@@ -241,7 +247,7 @@ export class Board {
       void this.el.offsetWidth;
       this.el.classList.remove('no-anim');
       this.hooks.onChange();
-      this.#reportStuck();
+      this.#settled();
       return;
     }
 
@@ -283,7 +289,7 @@ export class Board {
       card._inner.style.transitionDelay = '';
     });
     this.locked = false;
-    this.#reportStuck();
+    this.#settled();
   }
 
   #resetCards() {
@@ -315,7 +321,13 @@ export class Board {
 
     if (this.game.isWon()) this.#celebrate();
     else if (this.autoplay && this.game.canAutoComplete() && this.game.nextAutoMove()) this.#autoComplete();
-    else this.#reportStuck();
+    else this.#settled();
+  }
+
+  /** The table has come to rest after a change. */
+  #settled() {
+    this.#reportStuck();
+    this.#refreshAutoHint();
   }
 
   /** Tell the page whether the game has run out of useful moves. */
@@ -340,7 +352,7 @@ export class Board {
     this.#render();
     this.sound.play('undo');
     this.hooks.onChange();
-    this.#reportStuck();
+    this.#settled();
     return true;
   }
 
@@ -348,6 +360,8 @@ export class Board {
   freeze(on) {
     this.frozen = on;
     if (on) this.#cancelPress();
+    if (on) this.#clearHint();
+    else if (this.game) this.#refreshAutoHint();
   }
 
   /**
@@ -362,7 +376,7 @@ export class Board {
     if (moved) this.sound.play('place');
     this.hooks.onChange();
     if (this.game.isWon()) this.#celebrate();
-    else this.#reportStuck();
+    else this.#settled();
   }
 
   hint() {
@@ -375,16 +389,72 @@ export class Board {
       return;
     }
     this.sound.play('hint');
+    this.#showHint(hint);
+    if (hint.draw) this.hooks.onMessage(this.game.state.stock.length ? 'Try drawing a card.' : 'Turn the waste back over.');
+    this.hintTimer = setTimeout(() => {
+      this.#clearHint();
+      this.#refreshAutoHint();
+    }, 2200);
+  }
+
+  /** Light up a move: the cards to pick up and where they should go. */
+  #showHint(hint) {
     if (hint.draw) {
       const { stock } = this.game.state;
       if (stock.length) this.cards[stock[stock.length - 1]].classList.add('hint');
       else this.slots.stock.classList.add('hint-target');
-      this.hooks.onMessage(stock.length ? 'Try drawing a card.' : 'Turn the waste back over.');
     } else {
       for (const id of this.game.sequenceFrom(hint.id)) this.cards[id].classList.add('hint');
       this.#destElement(hint.dest).classList.add('hint-target');
     }
-    this.hintTimer = setTimeout(() => this.#clearHint(), 2200);
+  }
+
+  // ---- cheats: persistent hint and auto-play -----------------------------------------------------
+
+  #nextMove() {
+    const hint = this.nextMoveProvider ? this.nextMoveProvider(this.game) : this.game.hint();
+    return hint && !(hint.draw && this.game.isStuck()) ? hint : null;
+  }
+
+  setNextMoveProvider(fn) {
+    this.nextMoveProvider = fn;
+  }
+
+  /** Keep the next move highlighted at all times, without pressing Hint. */
+  setAutoHint(on) {
+    this.autoHint = on;
+    this.el.classList.toggle('auto-hint', on);
+    if (on) this.#refreshAutoHint();
+    else this.#clearHint();
+  }
+
+  #refreshAutoHint() {
+    if (!this.autoHint || !this.game) return;
+    this.#clearHint();
+    if (this.#busy || this.drag || this.game.isWon()) return;
+    const hint = this.#nextMove();
+    if (hint) this.#showHint(hint);
+  }
+
+  /** Play the next move by itself, one every `delayMs`. */
+  setAutoPlay(on, delayMs = this.autoDelay) {
+    this.autoPlay = on;
+    this.autoDelay = delayMs;
+    clearTimeout(this.autoTimer);
+    if (on) this.autoTimer = setTimeout(() => this.#autoStep(), delayMs);
+  }
+
+  #autoStep() {
+    if (!this.autoPlay) return;
+    if (this.game && !this.#busy && !this.drag && !this.press && !this.game.isWon()) {
+      const move = this.#nextMove();
+      if (move?.draw) this.draw();
+      else if (move) {
+        const result = this.game.move(move.id, move.dest);
+        if (result) this.#afterAction(result);
+      }
+    }
+    this.autoTimer = setTimeout(() => this.#autoStep(), this.autoDelay);
   }
 
   #clearHint() {
@@ -432,7 +502,7 @@ export class Board {
     if (run !== this.run) return;
     this.locked = false;
     if (this.game.isWon()) this.#celebrate();
-    else this.#reportStuck();
+    else this.#settled();
   }
 
   /** Cards bounce off the table, one after another, king first. */

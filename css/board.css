@@ -155,3 +155,8 @@
   .card { transition-duration: 0.01s; }
   .card-inner { transition-duration: 0.01s; }
 }
+
+/* Cheats: the next move stays lit instead of pulsing three times. */
+.board.auto-hint .card.hint,
+.board.auto-hint .card.hint-target,
+.board.auto-hint .slot.hint-target { animation-iteration-count: infinite; }

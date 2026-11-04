@@ -300,3 +300,68 @@ dialog.closing .sheet { animation: sheet-out 0.2s ease-in both; }
   border-color: var(--accent);
   color: var(--text);
 }
+
+/* ---- cheats ------------------------------------------------------------------------------------- */
+
+.cheats { display: grid; gap: 14px; }
+.cheats h3 { margin-bottom: 0; }
+.row-title { display: block; font-size: 16px; font-weight: 650; }
+.row .note { margin-top: 2px; }
+
+.slider { display: grid; gap: 6px; }
+
+.slider-head,
+.slider-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.slider-head span:first-child { font-weight: 650; color: var(--text); }
+.slider-head span:last-child { font-variant-numeric: tabular-nums; }
+
+.slider input[type='range'] {
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.slider input[type='range']::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 6px;
+  background: var(--slot-edge);
+}
+
+.slider input[type='range']::-moz-range-track {
+  height: 6px;
+  border-radius: 6px;
+  background: var(--slot-edge);
+}
+
+.slider input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -10px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.slider input[type='range']::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.slider input[type='range']:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
+.slider.off { opacity: 0.4; pointer-events: none; }

@@ -162,6 +162,28 @@
         </div>
         <button class="switch" id="sound-switch" type="button" role="switch" aria-label="Sound"><i></i></button>
       </section>
+      <section id="cheats-section" class="cheats" hidden>
+        <h3>Cheats</h3>
+        <div class="row">
+          <div>
+            <b class="row-title">Show next move</b>
+            <p class="note">Keeps the best move lit, no Hint needed</p>
+          </div>
+          <button class="switch" id="cheat-hint" type="button" role="switch" aria-label="Show next move"><i></i></button>
+        </div>
+        <div class="row">
+          <div>
+            <b class="row-title">Auto-play</b>
+            <p class="note">Plays the next move for you</p>
+          </div>
+          <button class="switch" id="cheat-auto" type="button" role="switch" aria-label="Auto-play"><i></i></button>
+        </div>
+        <label class="slider" for="cheat-speed">
+          <span class="slider-head"><span>Speed</span><span id="cheat-speed-label"></span></span>
+          <input id="cheat-speed" type="range" min="0" max="100" step="1">
+          <span class="slider-ends"><span>Slow</span><span>Fast</span></span>
+        </label>
+      </section>
       <section id="install-section" hidden>
         <button class="btn" id="install-btn" type="button" hidden>Install App</button>
         <p class="note" id="install-ios" hidden>To install, tap the Share button, then <b>Add to Home Screen</b>.</p>

@@ -6,7 +6,7 @@
 // - Requests are answered from the cache first and refreshed in the background, so an
 //   update shows up on the *next* launch. Bump CACHE_VERSION to drop old caches.
 
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE = `solitaire-${CACHE_VERSION}`;
 
 const SHELL = [
@@ -28,6 +28,7 @@ const SHELL = [
   'js/core/solver.js',
   'js/core/solver.worker.js',
   'js/core/winnable.js',
+  'js/cheats/planner.js',
   'js/net/config.js',
   'js/net/emitter.js',
   'js/net/match.js',
@@ -47,6 +48,7 @@ const SHELL = [
   'js/services/sound.js',
   'js/services/storage.js',
   'js/ui/board.js',
+  'js/ui/cheats.js',
   'js/ui/dialogs.js',
   'js/ui/hud.js',
   'js/ui/multiplayer.js',

@@ -13,6 +13,7 @@ import { Board } from './ui/board.js';
 import { createHud, Stopwatch } from './ui/hud.js';
 import { initDialogs, openDialog, closeDialog, wireDialog } from './ui/dialogs.js';
 import { initMultiplayer } from './ui/multiplayer.js';
+import { initCheats } from './ui/cheats.js';
 import { showResult, closeResult, setResultExtra } from './ui/results.js';
 import { showToast } from './ui/toast.js';
 
@@ -72,7 +73,10 @@ function setModeUi(next) {
   $('stuck-new').textContent = next === 'single' ? 'New Game' : 'Give Up';
   $('stuck-undo').hidden = next === 'pvp';
   board.autoplay = !(next === MODES.COOP && mp.role === 'guest'); // only one side runs auto-complete
-  if (next === 'single' || next === null) hud.setOpponent(null);
+  if (next === 'single' || next === null) {
+    hud.setOpponent(null);
+    cheats.reset(); // cheats exist only inside a multiplayer match
+  }
 }
 
 // ---- reacting to the board ---------------------------------------------------------------------
@@ -389,6 +393,7 @@ function dropMatch() {
 }
 
 function leaveMatch() {
+  cheats.reset();
   dropMatch();
   mpUi.cancel();
   closeResult();
@@ -419,6 +424,17 @@ const mpUi = initMultiplayer({
   onReady: attachMatch,
 });
 
+const cheats = initCheats({
+  board,
+  settings,
+  isMultiplayer: () => (mode === MODES.PVP || mode === MODES.COOP) && !!mp.match,
+});
+
+const openSettings = () => {
+  cheats.sync();
+  dialogs.openSettings();
+};
+
 wireDialog($('dlg-leave'));
 $('dlg-result').addEventListener('cancel', (e) => e.preventDefault()); // the result sheet only closes through its buttons
 
@@ -438,7 +454,7 @@ press('menu-multi', () => {
 });
 press('menu-settings', () => {
   sound.play('ui');
-  dialogs.openSettings();
+  openSettings();
 });
 
 press('btn-menu', () => {
@@ -467,7 +483,7 @@ press('btn-new', () => {
 });
 press('btn-settings', () => {
   sound.play('ui');
-  dialogs.openSettings();
+  openSettings();
 });
 press('btn-undo', () => board.undo());
 press('btn-hint', () => board.hint());

@@ -33,6 +33,7 @@ css/                  base (tokens, layout) · backgrounds (palettes) · glass �
 js/main.js            wires everything together
 js/core/              rules, no DOM: klondike.js, scoring.js, solver.js, cards.js, rng.js   (tested in test/)
 js/net/               multiplayer: protocol, host/guest match logic, WebRTC transport
+js/cheats/            planner for the cheats menu
 js/ui/                board.js (layout, animation, drag & drop) · dialogs · hud · toast
 js/services/          settings · sound · appearance (light/dark) · storage · pwa
 js/cards/             card theme system  ←  see below
@@ -127,6 +128,18 @@ Move by move (as before): waste to tableau +5, any card to a foundation +10, tur
   higher score wins. In co-op the team shares one score, time and move count.
 
 The numbers live at the top of `js/core/scoring.js`.
+
+## Cheats
+
+A hidden section in **Settings → Cheats**, shown only while a multiplayer match is being played by a player named
+`alp` (any capitalisation). It has two switches, both off by default and reset when you leave the match:
+
+- **Show next move:** keeps the best move lit all the time, no Hint button needed.
+- **Auto-play:** plays the next move for you, with a **Speed** slider (about 2.5 s down to 0.08 s per move).
+
+Both follow a winning line found by the solver (`js/cheats/planner.js`), falling back to the ordinary hint when the
+position can't be won any more. Auto-play makes ordinary moves, so they go through the host's checks like any other.
+The name check is a courtesy, not security: it all happens on the player's own device.
 
 ## Notes
 

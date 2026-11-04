@@ -8,6 +8,7 @@ const DEFAULTS = {
   cardTheme: DEFAULT_CARD_THEME,
   sound: true,
   playerName: '',
+  cheatSpeed: 50, // 0 = slowest, 100 = fastest
   drawCount: 1, // 1 | 3
 };
 
