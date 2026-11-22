@@ -132,7 +132,7 @@ The numbers live at the top of `js/core/scoring.js`.
 ## Cheats
 
 A hidden section in **Settings → Cheats**, shown only while a multiplayer match is being played by a player named
-`alp` (any capitalisation). It has two switches, both off by default and reset when you leave the match:
+`alp` or `admin` (any capitalisation). It has two switches, both off by default and reset when you leave the match:
 
 - **Show next move:** keeps the best move lit all the time, no Hint button needed.
 - **Auto-play:** plays the next move for you, with a **Speed** slider (about 2.5 s down to 0.08 s per move).
