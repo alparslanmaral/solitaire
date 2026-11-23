@@ -1,4 +1,4 @@
-// The Cheats section of Settings. It only exists for a player called "alp" or "admin", and only while a multiplayer
+// The Cheats section of Settings. It only exists for a player called "alp", and only while a multiplayer
 // match is being played. (The name check is a courtesy, not security: it all happens on this device.)
 //
 //   Show next move   keeps the best move highlighted
@@ -11,9 +11,6 @@ import { createPlanner } from '../cheats/planner.js';
 import { cleanName } from '../net/protocol.js';
 
 const $ = (id) => document.getElementById(id);
-
-// Names (any capitalisation) that get the cheats menu.
-const CHEAT_NAMES = ['alp', 'admin'];
 
 const SLOWEST_MS = 2500;
 const FASTEST_MS = 80;
@@ -35,7 +32,7 @@ export function initCheats({ board, settings, isMultiplayer }) {
   const planner = createPlanner();
   const on = { hint: false, auto: false };
 
-  const available = () => isMultiplayer() && CHEAT_NAMES.includes(cleanName(settings.get('playerName'), '').toLowerCase());
+  const available = () => isMultiplayer() && cleanName(settings.get('playerName'), '').toLowerCase() === 'alp' & 'admin';
 
   /** The planner's answer, or the ordinary hint when it can't find a win from here. */
   const provider = (game) => planner.next(game) ?? game.hint();
