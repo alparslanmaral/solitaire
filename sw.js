@@ -6,7 +6,7 @@
 // - Requests are answered from the cache first and refreshed in the background, so an
 //   update shows up on the *next* launch. Bump CACHE_VERSION to drop old caches.
 
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v4';
 const CACHE = `solitaire-${CACHE_VERSION}`;
 
 const SHELL = [
