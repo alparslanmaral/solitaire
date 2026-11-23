@@ -32,7 +32,7 @@ export function initCheats({ board, settings, isMultiplayer }) {
   const planner = createPlanner();
   const on = { hint: false, auto: false };
 
-  const available = () => isMultiplayer() && cleanName(settings.get('playerName'), '').toLowerCase() === 'alp' & 'admin';
+  const available = () => isMultiplayer() && cleanName(settings.get('playerName'), '').toLowerCase() === 'alp';
 
   /** The planner's answer, or the ordinary hint when it can't find a win from here. */
   const provider = (game) => planner.next(game) ?? game.hint();
